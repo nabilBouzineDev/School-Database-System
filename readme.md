@@ -9,6 +9,10 @@ Schools currently manage lessons and student enrollment manually, using paper-ba
 > **_Desired Situation_**:
 The school needs a database based system to manage lessons and student enrollment efficiently. The system should allow users to view student information, manage enrolled lessons, add, update, and delete student records, and view student information.
 
+## User Stories
+
+![user_story](https://github.com/nabilBouzineDev/School-Database-System/assets/139881384/af7f8a6b-80fd-41bb-a446-3c25edc5c759)
+
 # Links
 
 _**Any Question? Contact Me:**_
