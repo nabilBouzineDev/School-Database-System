@@ -1,0 +1,45 @@
+Algorithm: Add New Student
+
+a. Database Operations
+
+    Database Connection
+        Connect to SQLite database.
+
+    Table Creation and Definition
+        If tables "student", "lesson", and "student_lesson" do not exist,
+            create them with the specified attributes and relationships.
+
+    Query Definitions
+        Define SQL queries for creating tables, inserting records, and checking for existing records.
+
+b. Input Collection and Validation
+
+    Prompt User for Student Details
+        Student ID, first name, last name, age, grade, enrollment date, and enrolled lessons.
+    Validation
+        Validate student ID: ensure it is unique and a positive integer.
+        Validate labels (first name, last name, grade, lessons): ensure they are correctly formatted and contain valid characters.
+        Validate age: ensure it is a number between 5 and 35.
+        Validate enrollment date: ensure it matches the format (dd-MM-YYYY).
+        Validate lesson details: ensure the student is enrolled in at least one lesson.
+
+c. Data Insertion
+
+    Insert Student Record
+        If the student ID does not already exist, insert the new student record.
+    Insert Lesson Records
+        For each lesson, if it does not exist, insert the new lesson record.
+    Insert Student-Lesson Associations
+        Associate the student with the enrolled lessons by inserting records into the "student_lesson" table.
+
+d. Feedback
+
+    Display Success Message
+        Inform the user that the student was added successfully.
+    Display Error Message
+        Inform the user of any validation errors or if the student ID already exists.
+
+e. Database Cleanup
+
+    Commit and Close
+        Commit changes to the database and close the connection.

@@ -1,0 +1,247 @@
+Pseudocode: Feature 01- Add new student
+
+database.pseudo
+    // Create Query
+    INPUT create_student_table_query: CREATE TABLE IF NOT EXISTS student (ATTRIBUTES)
+    INPUT create_lesson_table_query: CREATE TABLE IF NOT EXISTS lesson (ATTRIBUTES)
+    INPUT create_student_lesson_table_query: CREATE TABLE IF NOT EXISTS student_lesson (ATTRIBUTES)
+
+    // Insert Query
+    INPUT insert_student_query: INSERT INTO student (VALUES)
+    INPUT insert_lessons_query: INSERT INTO lesson (VALUES)
+    INPUT insert_student_lesson_query: INSERT INTO student_lesson (VALUES)
+
+    // GET Specific Info Query
+    INPUT get_lesson_id_by_name: SELECT id FROM lesson WHERE name = ?
+
+    // Checking Query
+    INPUT select_student_exist_query: SELECT EXISTS (SELECT 1 FROM student WHERE id = ?)
+    INPUT select_lesson_exist_query: SELECT EXISTS (SELECT 1 FROM lesson WHERE name = ?)
+    INPUT select_student_lesson_exist_query: SELECT EXISTS (SELECT 1 FROM student_lesson WHERE name = ?)
+
+    // connect to db
+    FUNCTION connect_to_db():
+        Connect to database
+
+    // create tables
+    FUNCTION create_tables(connection):
+        WITH connection to db
+            Execute(create_student_table_query)
+            Execute(create_lesson_table_query)
+            Execute(create_student_lesson_table_query)
+
+
+    // insert records:
+    FUNCTION add_records(student_detail, lessons_detail):
+        Call add_student(student_detail)
+
+        FOR lesson in lessons_detail
+            Call add_lesson(lessons_detail.name)
+            Call add_student_lesson(student_detail.id, lesson_detail.name)
+        ENDFOR
+
+    // add student data
+    FUNCTION add_student(student_detail):
+        IF NOT Call is_student_exist(student_detail.id) THEN:
+            Execute(insert_student_query, student_detail)
+        ENDIF
+
+    // add the enrolled lessons
+    FUNCTION add_lessons(lessons_detail):
+        IF NOT Call is_lesson_exist(lesson_detail.name) THEN
+            Execute(insert_lesson_query, lesson_detail)
+        ENDIF
+
+    // add the joining table(associate between student and lesson)
+    FUNCTION add_student_lesson(student_id, lesson_name):
+       INPUT lesson_id = Execute(get_lesson_id_by_name)
+        IF NOT Call is_student_lesson_exist(student_id, lesson_id) THEN:
+            Execute(insert_student_lesson_student_query, student_id, lesson_id)
+        ENDIF
+
+    // is student already exist:
+    FUNCTION is_student_exist(student_id):
+        INPUT result = Execute(select_student_exist_query, student_id)
+        RETURN result
+
+    // is lesson already exist:
+    FUNCTION is_lesson_exist(lesson_name):
+        INPUT result = Execute(select_lesson_exist_query, lesson_name)
+        RETURN result
+
+    // is student lesson already exist
+    FUNCTION is_student_lesson_exist(student_id, lesson_id):
+        INPUT result = Execute(select_student_lesson_exist_query, student_id, lesson_id)
+        RETURN result
+
+
+    // clean up database
+    FUNCTION database_cleanup():
+        commit database
+        close database connection
+
+
+app.pseudo:
+
+    FROM database.pseudo IMPORT * AS db
+
+    FUNCTION menu():
+        INPUT student_detail, lessons_detail = prompt(
+            "Press a to add a student",
+            Call feature1_add_student()
+        )
+
+    FUNCTION feature1_add_student():
+        INPUT records_details = prompt(
+            // student_details
+            INPUT student_id
+            INPUT first_name
+            INPUT last_name
+            INPUT age
+            INPUT grade
+            INPUT enrolled_date
+
+            // lesson_details
+            INPUT number_of_enrolled_lessons
+            INPUT lesson_names
+        )
+
+        INPUT is_valid = Call validate_records_details(records_details)
+
+        IF is_valid THEN:
+            db.add_records(records_details(student_details), records_details(lesson_details)),
+            CALL display_success_message()
+        ELSE
+            CALL display_error_message(error)
+        ENDIF
+
+
+    // handle student data integrity
+    // Add Validation Logic
+    FUNCTION validate_records_details(student_details, lesson_details):
+
+        // User cannot enter empty messages
+        IF student_details IS EMPTY or lesson_details IS EMPTY THEN:
+            RAISE error
+            RETURN FALSE
+        ENDIF
+
+        // Student ID can be only a number
+        CALL validate_is_a_number(student_details.student_id)
+    
+        // User cannot enter a used student id. Must be unique
+        IF db.is_student_exist(student_detail.student_id) THEN:
+            RAISE error
+            RETURN FALSE
+        ENDIF
+
+        // Name can't be a number
+        CALL validate_is_not_number(student_details.first_name)
+        CALL validate_is_not_number(student_details.last_name)
+        
+        // Name can't be shorter than 3 charachters
+        CALL validate_min_char_length(student_details.first_name)
+        CALL validate_min_char_length(student_details.last_name)
+
+        
+        // Validation apply for last_name, grade end lesson name
+        // Name can't be longer than 15 charachters
+        CALL validate_max_char_length(student_details.first_name)
+        CALL validate_max_char_length(student_details.last_name)
+        CALL validate_max_char_length(student_details.grade)
+
+
+        // Name can't inculde unwated chars
+        CALL validate_unwanted_chars_removed(student_details.first_name)
+        CALL validate_unwanted_chars_removed(student_details.last_name)
+        CALL validate_unwanted_chars_removed(student_details.grade)
+        
+        // Age must be a number
+        CALL validate_is_a_number(student_details.age)
+        
+
+        // Age must be between 5 and 35
+        CALL validate_age_range(student_details.age):
+            
+        
+        // Number of enrolled lesson must be a number
+        CALL validate_is_a_number(lesson_details.number_of_enrolled_lessons)
+
+        // Student must have at least one lesson to enrol
+        IF lesson_details.number_of_enrolled_lessons == 0 THEN:
+            RAISE Error
+            RETURN FALSE
+        ENDIF 
+        
+        INPUT validated_lesson_names = []
+        FOR _ IN RANGE(lesson_details.number_of_enrolled_lessons):
+            // validate lesson
+            INPUT lesson
+            CALL validate_max_char_length(lesson)
+            CALL validate_unwanted_chars_removed(lesson)
+            validated_lesson_names.addToList(lesson)
+        ENDFOR
+        lesson_details.lesson_names = validated_lesson_names
+        
+        Return TRUE
+    
+    // Make sure the record is a number
+    FUNCTION validate_is_a_number(record):
+        IF record IS A NUMBER THEN:
+            RAISE Error
+            RETURN FALSE
+        ENDIF
+        RETURN
+
+    // Make sure the record is a number
+    FUNCTION validate_is_not_number(record):
+        IF record IS NOT A NUMBER THEN:
+            RAISE Error
+            RETURN FALSE
+        ENDIF
+        RETURN
+    
+    // Make sure record char size more than 3
+    FUNCTION validate_min_char_length(record):
+        IF char_length(record) < 3 THEN:
+            RAISE Error
+            RETURN FALSE
+        ENDIF
+        RETURN
+
+    // Make sure record char size more than 3
+    FUNCTION validate_max_char_length(record):    
+        IF char_length(record) >= 15 THEN:
+            RAISE Error
+            RETURN FALSE
+        ENDIF
+        RETURN
+
+    // Make sure record doesn't include bad char
+    FUNCTION validate_unwanted_chars_removed(record):    
+        // List of unwanted characters for names
+        INPUT not_allowed_chars = [ ";", "^"] // for example
+        FOR char IN not_allowed_chars:
+            IF char IN student_details.first_name THEN:
+                RAISE Error
+                RETURN FALSE
+            ENDIF
+        ENDFOR
+        RETURN
+    
+    // Make sure record within valid range
+    FUNCTION validate_age_range(record):
+        IF record < 5 OR  record.age > 35 THEN:
+            RAISE Error
+            RETURN FALSE
+        ENDIF 
+        RETURN
+    
+    // display a helpful messages to the user
+    FUNCTION display_success_message():
+        PRINT "Student added successfully!"
+
+    FUNCTION display_error_message(error):
+        Print "Error: $error"
+
+    Call menu()
