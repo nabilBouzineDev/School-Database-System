@@ -34,11 +34,23 @@ INSERT_STUDENT_LESSON = "INSERT OR REPLACE INTO student_lesson (student_id, less
 
 # Get specific info queries
 GET_LESSON_ID_BY_NAME = "SELECT id FROM lesson WHERE name = ?;"
+GET_LESSON_NAME_BY_SID = """
+SELECT lesson.name
+FROM lesson 
+JOIN student_lesson ON student_lesson.lesson_id = lesson.id 
+WHERE student_lesson.student_id = ?; """
 
 # Check queries
 IS_LESSON_EXIST = "SELECT EXISTS (SELECT 1 FROM lesson WHERE name = ?);"
 IS_STUDENT_EXIST = "SELECT EXISTS (SELECT 1 FROM student WHERE id = ?);"
 IS_STUDENT_LESSON_EXIST = "SELECT EXISTS (SELECT 1 FROM student_lesson WHERE student_id = ? AND lesson_id = ?);"
+
+# Update queries
+UPDATE_STUDENT_QUERY = "UPDATE student SET "
+UPDATE_LESSON_QUERY = """
+Update lesson 
+SET name = ? 
+WHERE id = (SELECT lesson_id FROM student_lesson WHERE student_id = ? AND lesson_id = ?); """
 
 
 def connect():
@@ -81,26 +93,61 @@ def add_student_lesson(connection, student_id, lesson_name):
             connection.execute(INSERT_STUDENT_LESSON, (student_id, lesson_id))
 
 
+# Construct dynamic query
+# And update student records
+def update_student(connection, student_id, updated_student_records):
+    global UPDATE_STUDENT_QUERY
+    with connection:
+        if is_student_exist(connection, student_id):
+            for field, value in updated_student_records.items():
+                UPDATE_STUDENT_QUERY += f'{field} = "{value}", '
+
+            # remove the last two characters
+            UPDATE_STUDENT_QUERY = UPDATE_STUDENT_QUERY[:-2]
+            UPDATE_STUDENT_QUERY += " WHERE id = ?"
+
+        connection.execute(UPDATE_STUDENT_QUERY, (student_id,))
+
+
+def update_lesson(connection, updated_student_records, student_id):
+    with connection:
+        for old_lesson, new_lesson in updated_student_records.items():
+            if is_lesson_exist(connection, old_lesson):
+                lesson_id = get_lesson_id_by_name(connection, old_lesson)
+                connection.execute(UPDATE_LESSON_QUERY, (new_lesson, student_id, lesson_id))
+
+
 def get_lesson_id_by_name(connection, lesson_name):
-    lesson_id = connection.execute(GET_LESSON_ID_BY_NAME, (lesson_name,)).fetchone()[0]
-    return lesson_id
+    with connection:
+        lesson_id = connection.execute(GET_LESSON_ID_BY_NAME, (lesson_name,)).fetchone()[0]
+        return lesson_id
+
+
+# show list of available lesson for each student
+def get_lesson_name_by_student_id(connection, student_id):
+    with connection:
+        lesson_names = connection.execute(GET_LESSON_NAME_BY_SID, (student_id,)).fetchall()
+        return lesson_names
 
 
 # Name: Functions with syntax like [is_table_exist()]
 # Goal: Used to avoid inserting duplicated data.
 def is_lesson_exist(connection, lesson_name):
-    result = connection.execute(IS_LESSON_EXIST, (lesson_name,)).fetchone()[0]
-    return True if result == 1 else False
+    with connection:
+        result = connection.execute(IS_LESSON_EXIST, (lesson_name,)).fetchone()[0]
+        return True if result == 1 else False
 
 
 def is_student_exist(connection, student_id):
-    result = connection.execute(IS_STUDENT_EXIST, (student_id,)).fetchone()[0]
-    return True if result == 1 else False
+    with connection:
+        result = connection.execute(IS_STUDENT_EXIST, (student_id,)).fetchone()[0]
+        return True if result == 1 else False
 
 
 def is_student_lesson_exist(connection, student_id, lesson_id):
-    result = connection.execute(IS_STUDENT_LESSON_EXIST, (student_id, lesson_id)).fetchone()[0]
-    return True if result == 1 else False
+    with connection:
+        result = connection.execute(IS_STUDENT_LESSON_EXIST, (student_id, lesson_id)).fetchone()[0]
+        return True if result == 1 else False
 
 
 def cleanup(connection):

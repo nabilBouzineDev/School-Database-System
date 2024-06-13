@@ -1,4 +1,4 @@
-Pseudocode: Feature 01- Add new student
+Pseudocode: Feature 02- Update old student
 
 database.pseudo
     // Create Query
@@ -6,18 +6,19 @@ database.pseudo
     INPUT create_lesson_table_query: CREATE TABLE IF NOT EXISTS lesson (ATTRIBUTES)
     INPUT create_student_lesson_table_query: CREATE TABLE IF NOT EXISTS student_lesson (ATTRIBUTES)
 
-    // Insert Query
-    INPUT insert_student_query: INSERT INTO student (VALUES)
-    INPUT insert_lessons_query: INSERT INTO lesson (VALUES)
-    INPUT insert_student_lesson_query: INSERT INTO student_lesson (VALUES)
-
     // GET Specific Info Query
     INPUT get_lesson_id_by_name: SELECT id FROM lesson WHERE name = ?
+    INPUT get_lesson_name_by_student_id: SELECT lesson.name FROM lesson JOIN student_lesson ON student_lesson.lesson_id = lesson.id WHERE student_lesson.student_id = ?
 
     // Checking Query
     INPUT select_student_exist_query: SELECT EXISTS (SELECT 1 FROM student WHERE id = ?)
     INPUT select_lesson_exist_query: SELECT EXISTS (SELECT 1 FROM lesson WHERE name = ?)
     INPUT select_student_lesson_exist_query: SELECT EXISTS (SELECT 1 FROM student_lesson WHERE name = ?)
+    
+
+    // Updating Query
+    INPUT update_student_query: UPDATE student SET 
+    INPUT update_lesson_query: Update lesson SET name = ? WHERE id = (SELECT lesson_id FROM student_lesson WHERE student_id = ? AND lesson_id = ?)
 
     // connect to db
     FUNCTION connect_to_db():
@@ -30,34 +31,42 @@ database.pseudo
             Execute(create_lesson_table_query)
             Execute(create_student_lesson_table_query)
 
+    // update student and lesson records:
+    FUNCTION update_records(student_id, old_lesson_name, new_student_records, new_lesson_name):
+        Call update_student(student_id, new_student_records)
+        Call update_lesson(old_lesson_name, new_lesson_name, student_id)
 
-    // insert records:
-    FUNCTION add_records(student_detail, lessons_detail):
-        Call add_student(student_detail)
 
-        FOR lesson in lessons_detail
-            Call add_lesson(lessons_detail.name)
-            Call add_student_lesson(student_detail.id, lesson_detail.name)
-        ENDFOR
-
-    // add student data
-    FUNCTION add_student(student_detail):
-        IF NOT Call is_student_exist(student_detail.id) THEN:
-            Execute(insert_student_query, student_detail)
+    // build dynamic update student query and update student details:
+    FUNCTION update_student(student_id, new_student_records):
+        IF Call is_student_exist(student_id) THEN:
+            
+            FOR field, value IN new_student_records:
+                update_student_query+= '${field} = "${value}", '
+            
+            update_student_query.removeLastTwoChars()
+            update_student_query+= 'WHERE id = ?'
+            Execute(update_student_query, student_id)
         ENDIF
 
-    // add the enrolled lessons
-    FUNCTION add_lessons(lessons_detail):
-        IF NOT Call is_lesson_exist(lesson_detail.name) THEN
-            Execute(insert_lesson_query, lesson_detail)
-        ENDIF
 
-    // add the joining table(associate between student and lesson)
-    FUNCTION add_student_lesson(student_id, lesson_name):
-       INPUT lesson_id = Execute(get_lesson_id_by_name)
-        IF NOT Call is_student_lesson_exist(student_id, lesson_id) THEN:
-            Execute(insert_student_lesson_student_query, student_id, lesson_id)
-        ENDIF
+    // update the lesson name
+    FUNCTION update_lesson(old_lesson_name, new_lesson_name, student_id):
+    IF Call is_lesson_exist(old_lesson_name) THEN:
+        INPUT lesson_id = Call get_lesson_id_by_name(old_lesson_name)
+        Execute(update_lesson_query, (new_lesson_name, student_id, lesson_id))
+    ENDIF
+
+
+    FUNCTION get_lesson_id_by_name(lesson_name):
+        INPUT lesson_id = Execute(get_lesson_id_by_name, lesson_name)
+        RETURN lesson_id
+
+    // show list of available lessons 4 a student
+    FUNCTION get_lesson_name_by_student_id(student_id)
+        INPUT lessons = Execute(get_lesson_name_by_student_id, student_id)
+        RETURN lessons
+
 
     // is student already exist:
     FUNCTION is_student_exist(student_id):
@@ -69,11 +78,6 @@ database.pseudo
         INPUT result = Execute(select_lesson_exist_query, lesson_name)
         RETURN result
 
-    // is student lesson already exist
-    FUNCTION is_student_lesson_exist(student_id, lesson_id):
-        INPUT result = Execute(select_student_lesson_exist_query, student_id, lesson_id)
-        RETURN result
-
 
     // clean up database
     FUNCTION database_cleanup():
@@ -81,35 +85,50 @@ database.pseudo
         close database connection
 
 
-app.pseudo:
+app .pseudo:
 
     FROM database.pseudo IMPORT * AS db
 
     FUNCTION menu():
         INPUT student_detail, lessons_detail = prompt(
-            "Press a to add a student",
-            Call feature1_add_student()
+            "Press u to update a student",
+            Call feature2_update_student()
         )
+    
+    FUNCTION prompt_avalaible_lessons(student_id):
+       INPUT old_lesson_name = db.get_lesson_name_by_student_id(student_id)
+       PRINT old_lesson_name
+       RETURN old_lesson_name
+       
 
-    FUNCTION feature1_add_student():
-        INPUT records_details = prompt(
-            // student_details
-            INPUT student_id
-            INPUT first_name
-            INPUT last_name
-            INPUT age
-            INPUT grade
-            INPUT enrolled_date
 
-            // lesson_details
-            INPUT number_of_enrolled_lessons
-            INPUT lesson_names
-        )
+    FUNCTION feature2_update_student():
+        // student_details
+        INPUT student_id
+        INPUT first_name
+        INPUT last_name
+        INPUT age
+        INPUT grade
+        INPUT enrolled_date
+
+        // lesson_details
+        INPUT old_lesson_name = CALL prompt_avalaible_lessons(student_id)
+        INPUT new_lesson_name
+
+        INPUT records_details = {
+            "student_id": student_id,
+            "first_name": first_name,
+            "last_name": last_name,
+            "age": age,
+            "grade": grade,
+            "enrollment_date": enrollment_date,
+            "lesson_names": lesson_names
+        }
 
         INPUT is_valid = Call validate_records_details(records_details)
 
         IF is_valid THEN:
-            db.add_records(records_details(student_details), records_details(lesson_details)),
+            db. (student_id, old_lesson_name, records_details["student_details"], records_details["lesson_names"]),
             CALL display_success_message()
         ELSE
             CALL display_error_message(error)
@@ -129,8 +148,8 @@ app.pseudo:
         // Student ID can be only a number
         CALL validate_is_a_number(student_details.student_id)
     
-        // User cannot enter a used student id. Must be unique
-        IF db.is_student_exist(student_detail.student_id) THEN:
+        // User cannot update a student id doesn't exist
+        IF NOT db.is_student_exist(student_detail.student_id) THEN:
             RAISE error
             RETURN FALSE
         ENDIF
@@ -164,17 +183,10 @@ app.pseudo:
         CALL validate_age_range(student_details.age):
             
         
-        // Number of enrolled lesson must be a number
-        CALL validate_is_a_number(lesson_details.number_of_enrolled_lessons)
-
-        // Student must have at least one lesson to enrol
-        IF lesson_details.number_of_enrolled_lessons == 0 THEN:
-            RAISE Error
-            RETURN FALSE
-        ENDIF 
-        
+        // validate lesson names
         INPUT validated_lesson_names = []
-        FOR _ IN RANGE(lesson_details.number_of_enrolled_lessons):
+            
+        FOR lesson IN lesson_names:
             // validate lesson
             INPUT lesson
             CALL validate_max_char_length(lesson)
@@ -182,7 +194,7 @@ app.pseudo:
             validated_lesson_names.addToList(lesson)
         ENDFOR
         lesson_details.lesson_names = validated_lesson_names
-        
+
         Return TRUE
     
     // Make sure the record is a number

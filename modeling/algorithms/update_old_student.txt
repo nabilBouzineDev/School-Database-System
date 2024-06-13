@@ -1,0 +1,40 @@
+Algorithm: Update Old Student
+
+a. Database Operations
+
+    1. Connect to SQLite database.
+    2. Create tables ("student", "lesson", "student_lesson") if they do not exist.
+    3. Define SQL queries for checking and updating existing records.
+
+b. Input Collection and Validation
+
+    1. Ask User for Student ID.
+        - If it doesn't exist, stop the operation.
+        - If it exists, prompt the user to select details to update:
+            1. First name
+            2. Last name
+            3. Age
+            4. Grade
+            5. Enrollment date
+            6. Enrolled lessons
+                - Prompt available lessons and pick which one you want to update
+    2. After each selection, ask the user if they are done.
+        - If yes, stop the update operation and exit to the menu.
+        - If not, prompt the above details for other update.
+    3. Validate the selected records.
+
+c. Data Modification
+
+    1. Update Student Record if the student ID already exists.
+    2. Update Lesson Records for each lesson.
+    3. Update Student-Lesson Associations by updating records in the "student_lesson" table.
+
+d. Feedback
+
+    1. Display Success Message if the update is successful.
+    2. Display Error Message for validation errors or if the student ID doesn't exist.
+
+e. Database Cleanup
+
+    1. Commit changes to the database.
+    2. Close the database connection.
