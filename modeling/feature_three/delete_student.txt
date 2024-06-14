@@ -1,0 +1,28 @@
+Algorithm-Feature 03: Delete Student
+
+a. Database Operations
+
+    1. Connect to SQLite database.
+    2. Create tables ("student", "lesson", "student_lesson") if they do not exist.
+    3. Define SQL queries for checking and deleting student.
+
+b. Input Collection and Validation
+
+    Ask User for Student ID.
+        - If it doesn't exist or user enters 'c', stop the operation.
+        - If it's not valid, keep asking until it's valid.
+
+c. Data Deletion
+
+    1. Delete Student-Lesson association of the targeted student from the "student_lesson" table.
+    2. Delete targeted student from "student" table.
+
+d. Feedback
+
+    1. Display Success Message if student deleted successfully.
+    2. Display Error Message for validation errors or if the student ID doesn't exist.
+
+e. Database Cleanup
+
+    1. Commit changes to the database.
+    2. Close the database connection.

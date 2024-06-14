@@ -52,6 +52,13 @@ Update lesson
 SET name = ? 
 WHERE id = (SELECT lesson_id FROM student_lesson WHERE student_id = ? AND lesson_id = ?); """
 
+# DELETE queries
+DELETE_FROM_STUDENT_LESSON_BY_LESSON_ID = "DELETE FROM student_lesson WHERE lesson_id = ?; "
+DELETE_FROM_LESSON_BY_ID = "DELETE FROM lesson WHERE id = ?; "
+
+DELETE_FROM_STUDENT_LESSON_BY_STUDENT_ID = "DELETE FROM student_lesson WHERE student_id = ?; "
+DELETE_FROM_STUDENT_BY_ID = "DELETE FROM student WHERE id = ?; "
+
 
 def connect():
     return sqlite3.connect('./db/data.db')
@@ -64,6 +71,8 @@ def create_tables(connection):
         connection.execute(CREATE_STUDENT_LESSON_TABLE)
 
 
+# Name: Functions with syntax like [add_field()]
+# Goal: Add records to db.
 def add_records(connection, student_detail, lessons_detail):
     for student_id, first_name, last_name, age, grade, enrol_date in [student_detail]:
         add_student(connection, student_id, first_name, last_name, age, grade, enrol_date)
@@ -93,8 +102,10 @@ def add_student_lesson(connection, student_id, lesson_name):
             connection.execute(INSERT_STUDENT_LESSON, (student_id, lesson_id))
 
 
-# Construct dynamic query
-# And update student records
+# Name: Functions with syntax like [update_field()]
+# Goal: Update records in db.
+
+# Construct dynamic query and update student records
 def update_student(connection, student_id, updated_student_records):
     global UPDATE_STUDENT_QUERY
     with connection:
@@ -112,11 +123,34 @@ def update_student(connection, student_id, updated_student_records):
 def update_lesson(connection, updated_student_records, student_id):
     with connection:
         for old_lesson, new_lesson in updated_student_records.items():
-            if is_lesson_exist(connection, old_lesson):
+            # we don't have to update if the new lesson already exist
+            if is_lesson_exist(connection, new_lesson):
+                # delete old lesson
+                lesson_id = get_lesson_id_by_name(connection, old_lesson)
+                delete_lesson(connection, lesson_id)
+            else:
                 lesson_id = get_lesson_id_by_name(connection, old_lesson)
                 connection.execute(UPDATE_LESSON_QUERY, (new_lesson, student_id, lesson_id))
 
 
+# Name: Functions with syntax like [delete_field()]
+# Goal: Delete records from db.
+def delete_student(connection, student_id):
+    with connection:
+        # Start with student_lesson because it depends on student_id
+        connection.execute(DELETE_FROM_STUDENT_LESSON_BY_STUDENT_ID, (student_id,))
+        connection.execute(DELETE_FROM_STUDENT_BY_ID, (student_id,))
+
+
+def delete_lesson(connection, lesson_id):
+    with connection:
+        # Start with student_lesson because it depends on lesson_id
+        connection.execute(DELETE_FROM_STUDENT_LESSON_BY_LESSON_ID, (lesson_id,))
+        connection.execute(DELETE_FROM_LESSON_BY_ID, (lesson_id,))
+
+
+# Name: Functions with syntax like [get_record_by_parameter_record()]
+# Goal: Pass a record to fetch another record.
 def get_lesson_id_by_name(connection, lesson_name):
     with connection:
         lesson_id = connection.execute(GET_LESSON_ID_BY_NAME, (lesson_name,)).fetchone()[0]
@@ -124,14 +158,14 @@ def get_lesson_id_by_name(connection, lesson_name):
 
 
 # show list of available lesson for each student
-def get_lesson_name_by_student_id(connection, student_id):
+def get_lesson_names_by_student_id(connection, student_id):
     with connection:
         lesson_names = connection.execute(GET_LESSON_NAME_BY_SID, (student_id,)).fetchall()
         return lesson_names
 
 
 # Name: Functions with syntax like [is_table_exist()]
-# Goal: Used to avoid inserting duplicated data.
+# Goal: Check if record exist in this table.
 def is_lesson_exist(connection, lesson_name):
     with connection:
         result = connection.execute(IS_LESSON_EXIST, (lesson_name,)).fetchone()[0]

@@ -1,4 +1,4 @@
-Algorithm: Add New Student
+Algorithm-Feature 01: Add New Student
 
 a. Database Operations
 

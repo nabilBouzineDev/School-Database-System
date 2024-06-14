@@ -251,7 +251,7 @@ app .pseudo:
     
     // display a helpful messages to the user
     FUNCTION display_success_message():
-        PRINT "Student added successfully!"
+        PRINT "Student updated successfully!"
 
     FUNCTION display_error_message(error):
         Print "Error: $error"

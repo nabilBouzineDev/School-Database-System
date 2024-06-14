@@ -1,0 +1,124 @@
+Pseudocode: Feature 03- Delete student
+
+
+database.pseudo
+    // Create Query
+    INPUT create_student_table_query: CREATE TABLE IF NOT EXISTS student (ATTRIBUTES)
+    INPUT create_lesson_table_query: CREATE TABLE IF NOT EXISTS lesson (ATTRIBUTES)
+    INPUT create_student_lesson_table_query: CREATE TABLE IF NOT EXISTS student_lesson (ATTRIBUTES)
+
+    // GET Specific Info Query
+    INPUT get_lesson_id_by_name: SELECT id FROM lesson WHERE name = ?
+    INPUT get_lesson_name_by_student_id: SELECT lesson.name FROM lesson JOIN student_lesson ON student_lesson.lesson_id = lesson.id WHERE student_lesson.student_id = ?
+
+    // Checking Query
+    INPUT select_student_exist_query: SELECT EXISTS (SELECT 1 FROM student WHERE id = ?)
+    INPUT select_lesson_exist_query: SELECT EXISTS (SELECT 1 FROM lesson WHERE name = ?)
+    INPUT select_student_lesson_exist_query: SELECT EXISTS (SELECT 1 FROM student_lesson WHERE name = ?)
+    
+    // Updating Query
+    INPUT update_student_query: UPDATE student SET 
+    INPUT update_lesson_query: Update lesson SET name = ? WHERE id = (SELECT lesson_id FROM student_lesson WHERE student_id = ? AND lesson_id = ?)
+
+    // Deleting Query
+    INPUT delete_from_student_lesson_by_student_id: DELETE FROM student_lesson WHERE student_id = ?
+    INPUT delete_from_student_by_id: DELETE FROM student WHERE id = ?
+    
+
+    // connect to db
+    FUNCTION connect_to_db():
+        Connect to database
+
+    // create tables
+    FUNCTION create_tables(connection):
+        WITH connection to db
+            Execute(create_student_table_query)
+            Execute(create_lesson_table_query)
+            Execute(create_student_lesson_table_query)
+
+    // Delete student
+    FUNCTION delete_student(student_id):
+        Execute(delete_from_student_lesson_by_student_id, student_id)
+        Execute(delete_from_student_by_id, student_id)
+
+
+    // is student already exist:
+    FUNCTION is_student_exist(student_id):
+        INPUT result = Execute(select_student_exist_query, student_id)
+        RETURN result
+
+    // clean up database
+    FUNCTION database_cleanup():
+        commit database
+        close database connection
+
+
+app .pseudo:
+
+    FROM database.pseudo IMPORT * AS db
+
+    FUNCTION menu():
+        INPUT student_detail, lessons_detail = prompt(
+            "Press d to delete a student",
+            Call feature3_delete_student()
+        )
+
+    FUNCTION feature3_delete_student():
+        while (TRUE) {
+            INPUT student_id
+            
+
+            IF student_id == 'c' THEN:
+                CALL display_error_message("Operation canceled")
+                RETURN
+            ENDIF
+            
+            INPUT is_valid = Call validate_student_id(student_id)
+    
+            IF is_valid THEN:
+                db.delete_student(student_id)
+                break
+            ELSE
+                CALL display_error_message(error)
+                continue
+            ENDIF   
+        }
+
+        CALL display_success_message()
+
+    // Add Validation Logic
+    FUNCTION validate_student_id(student_id):
+
+        // User cannot enter empty messages
+        IF student_id IS EMPTY:
+            RAISE error
+            RETURN FALSE
+        ENDIF
+
+        // Student ID can be only a number
+        CALL validate_is_a_number(student_id)
+    
+        // User cannot update a student id doesn't exist
+        IF NOT db.is_student_exist(student_id) THEN:
+            RAISE error
+            RETURN FALSE
+        ENDIF
+
+        Return TRUE
+    
+    // Make sure the record is a number
+    FUNCTION validate_is_a_number(record):
+        IF record IS A NUMBER THEN:
+            RAISE Error
+            RETURN FALSE
+        ENDIF
+        RETURN
+    
+    // display a helpful messages to the user
+    FUNCTION display_success_message():
+        PRINT "Student deleted successfully!"
+
+    FUNCTION display_error_message(error):
+        Print "Error: $error"
+
+    Call menu()
