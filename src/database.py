@@ -13,9 +13,7 @@ age INTEGER,
 grade TEXT,
 enrol_date datetime DEFAULT NULL
 ); """
-
 CREATE_LESSON_TABLE = "CREATE TABLE IF NOT EXISTS lesson (id INTEGER PRIMARY KEY, name TEXT);"
-
 CREATE_STUDENT_LESSON_TABLE = """
 CREATE TABLE IF NOT EXISTS student_lesson
 (
@@ -32,13 +30,29 @@ INSERT_STUDENT = \
 INSERT_LESSON = "INSERT INTO lesson (name) VALUES(?);"
 INSERT_STUDENT_LESSON = "INSERT OR REPLACE INTO student_lesson (student_id, lesson_id) VALUES (?, ?);"
 
-# Get specific info queries
+# Selecting Query
 GET_LESSON_ID_BY_NAME = "SELECT id FROM lesson WHERE name = ?;"
 GET_LESSON_NAME_BY_SID = """
 SELECT lesson.name
 FROM lesson 
 JOIN student_lesson ON student_lesson.lesson_id = lesson.id 
 WHERE student_lesson.student_id = ?; """
+GET_STUDENT_INFOS = """
+SELECT 
+    student.id,
+    student.first_name, 
+    student.last_name, 
+    student.age, 
+    student.grade, 
+    student.enrol_date,
+    (
+        SELECT GROUP_CONCAT(lesson.name, ",")
+        FROM lesson
+        JOIN student_lesson ON student_lesson.lesson_id = lesson.id
+        WHERE student_lesson.student_id = student.id
+    ) AS enrolled_lessons
+FROM student
+WHERE student.id = ?; """
 
 # Check queries
 IS_LESSON_EXIST = "SELECT EXISTS (SELECT 1 FROM lesson WHERE name = ?);"
@@ -149,8 +163,14 @@ def delete_lesson(connection, lesson_id):
         connection.execute(DELETE_FROM_LESSON_BY_ID, (lesson_id,))
 
 
-# Name: Functions with syntax like [get_record_by_parameter_record()]
-# Goal: Pass a record to fetch another record.
+# Name: Functions with syntax like [get_record()]
+# Goal: Fetch records from db.
+def get_student_infos(connection, student_id):
+    with connection:
+        student_infos = connection.execute(GET_STUDENT_INFOS, (student_id,)).fetchall()
+        return student_infos[0]
+
+
 def get_lesson_id_by_name(connection, lesson_name):
     with connection:
         lesson_id = connection.execute(GET_LESSON_ID_BY_NAME, (lesson_name,)).fetchone()[0]

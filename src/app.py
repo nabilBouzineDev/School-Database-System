@@ -8,6 +8,7 @@ MENU_PROMPT = """\n -- SCHOOL APP SYSTEM --
 a) Add a new student.
 u) Update a student.
 d) Delete a student. 
+s) See student infos.
 e) Exit.
 
 Your Selection: """
@@ -36,6 +37,8 @@ def menu():
             prompt_update_old_student(connection)
         elif user_input == 'd':
             prompt_delete_student(connection)
+        elif user_input == 's':
+            prompt_select_student(connection)
         else:
             print("\n -- Invalid operation, please try again! -- ")
 
@@ -283,6 +286,8 @@ def prompt_update_old_student(connection):
 
 
 def prompt_delete_student(connection):
+    print("\n -- Press 'c' to cancel the whole operation! -- \n")
+
     while True:
         student_id = input("Enter student ID You want to delete: ")
         if um.cancel_operation(student_id):
@@ -295,6 +300,24 @@ def prompt_delete_student(connection):
 
     database.delete_student(connection, student_id)
     um.display_success_message("deleted student")
+
+
+def prompt_select_student(connection):
+    print("\n -- Press 'c' to cancel the whole operation! --")
+
+    while True:
+        student_id = input("\nEnter student ID You want to display: ")
+        if um.cancel_operation(student_id):
+            return
+        try:
+            uv.validate_student_id(connection, student_id, "select")
+            break
+        except ValueError:
+            continue
+
+    # display the results
+    student_infos = database.get_student_infos(connection, student_id)
+    um.display_student_infos_table(student_infos)
 
 
 # turn lessons fetched from db as tuples into a list

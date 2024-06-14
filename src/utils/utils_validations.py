@@ -19,7 +19,7 @@ def validate_student_id(connection, student_id, operation):
             um.display_error_message(f"Try again, this student id: ({student_id}) is reserved for another student!")
             raise ValueError
 
-    if operation == "update" or operation == "delete":
+    if operation != "add":
         if not database.is_student_exist(connection, student_id):
             um.display_error_message(f"Try again, this student id: ({student_id}) doesn't exist. Please add it first!")
             raise ValueError

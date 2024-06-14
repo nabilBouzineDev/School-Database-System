@@ -1,4 +1,4 @@
-Pseudocode: Feature 03- Delete student
+Pseudocode: Feature 04- Select Student Infos
 
 
 database.pseudo
@@ -7,9 +7,26 @@ database.pseudo
     INPUT create_lesson_table_query: CREATE TABLE IF NOT EXISTS lesson (ATTRIBUTES)
     INPUT create_student_lesson_table_query: CREATE TABLE IF NOT EXISTS student_lesson (ATTRIBUTES)
 
-    // GET Specific Info Query
+    // Selecting Query
     INPUT get_lesson_id_by_name: SELECT id FROM lesson WHERE name = ?
     INPUT get_lesson_name_by_student_id: SELECT lesson.name FROM lesson JOIN student_lesson ON student_lesson.lesson_id = lesson.id WHERE student_lesson.student_id = ?
+    Input get_student_infos_query: 
+        SELECT 
+            student.id AS student_id,
+            student.first_name, 
+            student.last_name, 
+            student.age, 
+            student.grade, 
+            student.enrol_date,
+            (
+                SELECT GROUP_CONCAT(lesson.name, CHAR(13))
+                FROM lesson
+                JOIN student_lesson ON student_lesson.lesson_id = lesson.id
+                WHERE student_lesson.student_id = student_id
+            ) AS enrolled_lessons
+        FROM student
+        WHERE student_id = ?
+
 
     // Checking Query
     INPUT select_student_exist_query: SELECT EXISTS (SELECT 1 FROM student WHERE id = ?)
@@ -23,7 +40,7 @@ database.pseudo
     // Deleting Query
     INPUT delete_from_student_lesson_by_student_id: DELETE FROM student_lesson WHERE student_id = ?
     INPUT delete_from_student_by_id: DELETE FROM student WHERE id = ?
-    
+
 
     // connect to db
     FUNCTION connect_to_db():
@@ -36,10 +53,10 @@ database.pseudo
             Execute(create_lesson_table_query)
             Execute(create_student_lesson_table_query)
 
-    // Delete student
-    FUNCTION delete_student(student_id):
-        Execute(delete_from_student_lesson_by_student_id, student_id)
-        Execute(delete_from_student_by_id, student_id)
+    // Select Student Info
+    FUNCTION select_student_infos(student_id):
+        student_infos = Execute(get_student_infos_query, student_id)
+        RETURN student_infos
 
 
     // is student already exist:
@@ -59,11 +76,13 @@ app .pseudo:
 
     FUNCTION menu():
         INPUT student_detail, lessons_detail = prompt(
-            "Press d to delete a student",
-            Call feature3_delete_student()
+            "Press s to see student informations",
+            Call feature4_select_student()
         )
 
-    FUNCTION feature3_delete_student():
+    FUNCTION feature4_select_student():
+        
+        student_infos = []
         while (TRUE) {
             INPUT student_id
             
@@ -76,7 +95,7 @@ app .pseudo:
             INPUT is_valid = Call validate_student_id(student_id)
     
             IF is_valid THEN:
-                db.delete_student(student_id)
+                student_infos = db.select_student_infos(student_id)
                 break
             ELSE
                 CALL display_error_message(error)
@@ -84,7 +103,7 @@ app .pseudo:
             ENDIF   
         }
 
-        CALL display_success_message()
+        CALL display_student_infos_table(student_infos)
 
     // Add Validation Logic
     FUNCTION validate_student_id(student_id):
@@ -115,8 +134,10 @@ app .pseudo:
         RETURN
     
     // display a helpful messages to the user
-    FUNCTION display_success_message():
-        PRINT "Student deleted successfully!"
+    FUNCTION display_student_infos_table(student_infos):
+        // Use tabulate: library to draw CL tables
+        result = tabulate(student_infos)
+        Print(result)
 
     FUNCTION display_error_message(error):
         Print "Error: $error"
