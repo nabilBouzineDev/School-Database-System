@@ -1,5 +1,5 @@
 # Understand the Problem
-## Problem Definition
+## Problem Overview
 
 > **_Problem Definition_**: School Management System for Lessons and Student Management
 
