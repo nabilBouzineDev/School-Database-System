@@ -8,20 +8,35 @@ a. Database Operations
 
 b. Input Collection and Validation
 
-    1. Ask User for Student ID.
-        - If it doesn't exist, stop the operation.
-        - If it exists, prompt the user to select details to update:
+    1. Ask User for Student ID to update.
+        - If it doesn't exist or user enters 'c' or input is empty, stop the operation.
+        - If it's not valid, keep asking until it's valid.
+        _ If it's valid, prompt and ask User to select for update:
             1. First name
+                - If any input is 'c' or it is empty, stop the operation.
+                - If they have bad chars or less than 3 letters or more than 20 letters, raise error.
+                - If they're not valid, keep asking until it's valid.
             2. Last name
+                - If any input is 'c' or it is empty, stop the operation.
+                - If they have bad chars or less than 3 letters or more than 20 letters, raise error.
+                - If they're not valid, keep asking until it's valid.
             3. Age
+                - If any input is 'c' or it is empty, stop the operation.
+                - If it's not a number or not between 5 and 35, raise error.
+                - If it's not valid, keep asking until it's valid.
             4. Grade
+                - If any input is 'c' or it is empty, stop the operation.
+                - If they have bad chars or less than 3 letters or more than 20 letters, raise error.
+                - If they're not valid, keep asking until it's valid.
             5. Enrollment date
+                - If any input is 'c' or it is empty, stop the operation.
+                - If it's not matching (dd-MM-YYYY) format, raise error.
+                - If it's not valid, keep asking until it's valid.
             6. Enrolled lessons
-                - Prompt available lessons and pick which one you want to update
-    2. After each selection, ask the user if they are done.
-        - If yes, stop the update operation and exit to the menu.
-        - If not, prompt the above details for other update.
-    3. Validate the selected records.
+                - For each select lesson to update.
+                    - If any input is 'c' or it is empty, stop the operation.
+                    - If they have bad chars or less than 3 letters or more than 20 letters, raise error.
+                    - If they're not valid, keep asking until it's valid.
 
 c. Data Modification
 

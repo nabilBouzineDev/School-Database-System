@@ -7,19 +7,9 @@ database.pseudo
     INPUT create_lesson_table_query: CREATE TABLE IF NOT EXISTS lesson (ATTRIBUTES)
     INPUT create_student_lesson_table_query: CREATE TABLE IF NOT EXISTS student_lesson (ATTRIBUTES)
 
-    // GET Specific Info Query
-    INPUT get_lesson_id_by_name: SELECT id FROM lesson WHERE name = ?
-    INPUT get_lesson_name_by_student_id: SELECT lesson.name FROM lesson JOIN student_lesson ON student_lesson.lesson_id = lesson.id WHERE student_lesson.student_id = ?
-
     // Checking Query
     INPUT select_student_exist_query: SELECT EXISTS (SELECT 1 FROM student WHERE id = ?)
-    INPUT select_lesson_exist_query: SELECT EXISTS (SELECT 1 FROM lesson WHERE name = ?)
-    INPUT select_student_lesson_exist_query: SELECT EXISTS (SELECT 1 FROM student_lesson WHERE name = ?)
     
-    // Updating Query
-    INPUT update_student_query: UPDATE student SET 
-    INPUT update_lesson_query: Update lesson SET name = ? WHERE id = (SELECT lesson_id FROM student_lesson WHERE student_id = ? AND lesson_id = ?)
-
     // Deleting Query
     INPUT delete_from_student_lesson_by_student_id: DELETE FROM student_lesson WHERE student_id = ?
     INPUT delete_from_student_by_id: DELETE FROM student WHERE id = ?

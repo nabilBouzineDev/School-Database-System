@@ -2,44 +2,44 @@ Algorithm-Feature 01: Add New Student
 
 a. Database Operations
 
-    Database Connection
-        Connect to SQLite database.
-
-    Table Creation and Definition
-        If tables "student", "lesson", and "student_lesson" do not exist,
-            create them with the specified attributes and relationships.
-
-    Query Definitions
-        Define SQL queries for creating tables, inserting records, and checking for existing records.
+    1. Connect to SQLite database.
+    2. Create tables ("student", "lesson", "student_lesson") if they do not exist.
+    3. Define SQL queries for creating tables, checking existence and inserting records.
 
 b. Input Collection and Validation
 
-    Prompt User for Student Details
-        Student ID, first name, last name, age, grade, enrollment date, and enrolled lessons.
-    Validation
-        Validate student ID: ensure it is unique and a positive integer.
-        Validate labels (first name, last name, grade, lessons): ensure they are correctly formatted and contain valid characters.
-        Validate age: ensure it is a number between 5 and 35.
-        Validate enrollment date: ensure it matches the format (dd-MM-YYYY).
-        Validate lesson details: ensure the student is enrolled in at least one lesson.
+    1. Ask User for Student ID:
+        - If any input is 'c' or it is empty, stop the operation.
+        - If already exists or not a number, raise error.
+        - If it's not valid, keep asking until it's valid.
+
+    2. Ask User for labels (first name, last name, grade, lesson name):
+        - If any input is 'c' or it is empty, stop the operation.
+        - If they have bad chars or less than 3 letters or more than 20 letters, raise error.
+        - If they're not valid, keep asking until it's valid.
+
+    3. Ask User for Age:
+        - If any input is 'c' or it is empty, stop the operation.
+        - If it's not a number or not between 5 and 35, raise error.
+        - If it's not valid, keep asking until it's valid.
+
+    4. Ask User for Enrollment date:
+        - If any input is 'c' or it is empty, stop the operation.
+        - If it's not matching (dd-MM-YYYY) format, raise error.
+        - If it's not valid, keep asking until it's valid.
 
 c. Data Insertion
 
-    Insert Student Record
-        If the student ID does not already exist, insert the new student record.
-    Insert Lesson Records
-        For each lesson, if it does not exist, insert the new lesson record.
-    Insert Student-Lesson Associations
-        Associate the student with the enrolled lessons by inserting records into the "student_lesson" table.
+    1. Insert Student Record If the student ID does not exist.
+    2. Insert Lesson Records if lesson does not exist.
+    3. Insert Student-Lesson Associations
 
 d. Feedback
 
-    Display Success Message
-        Inform the user that the student was added successfully.
-    Display Error Message
-        Inform the user of any validation errors or if the student ID already exists.
+    1. Display Success Message if student added successfully.
+    2. Display Error Message for validation errors or if the student ID already exist.
 
 e. Database Cleanup
 
-    Commit and Close
-        Commit changes to the database and close the connection.
+    1. Commit changes to the database.
+    2. Close the database connection.

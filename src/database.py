@@ -79,27 +79,26 @@ def connect():
 
 
 def create_tables(connection):
+    create_table_queries = [CREATE_STUDENT_TABLE, CREATE_LESSON_TABLE, CREATE_STUDENT_LESSON_TABLE]
     with connection:
-        connection.execute(CREATE_STUDENT_TABLE)
-        connection.execute(CREATE_LESSON_TABLE)
-        connection.execute(CREATE_STUDENT_LESSON_TABLE)
+        for query in create_table_queries:
+            connection.execute(query)
 
 
 # Name: Functions with syntax like [add_field()]
 # Goal: Add records to db.
 def add_records(connection, student_detail, lessons_detail):
-    for student_id, first_name, last_name, age, grade, enrol_date in [student_detail]:
-        add_student(connection, student_id, first_name, last_name, age, grade, enrol_date)
+    add_student(connection, student_detail)
 
     for lesson_name in lessons_detail:
         add_lesson(connection, lesson_name)
         add_student_lesson(connection, student_detail[0], lesson_name)
 
 
-def add_student(connection, student_id, first_name, last_name, age, grade, enrol_date):
+def add_student(connection, student_detail):
     with connection:
-        if not is_student_exist(connection, student_id):
-            connection.execute(INSERT_STUDENT, (student_id, first_name, last_name, age, grade, enrol_date))
+        if not is_student_exist(connection, student_detail[0]):
+            connection.execute(INSERT_STUDENT, (*student_detail,))
 
 
 def add_lesson(connection, lesson_name):

@@ -2,9 +2,10 @@ from tabulate import tabulate
 
 
 def cancel_operation(input_value):
-    if input_value.lower() == 'c':
+    input_str = str(input_value)
+    if input_str.lower() == 'c':
         print("\n -- Operation Canceled! -- ")
-    return input_value.lower() == 'c'
+    return input_str.lower() == 'c'
 
 
 # Name: Functions with syntax like [display_state_message()]
@@ -14,7 +15,7 @@ def display_error_message(error):
 
 
 def display_success_message(message):
-    print("\n You've " + message + " successfully!")
+    print("\nYou've " + message + " successfully!")
 
 
 def display_student_infos_table(student_infos):
@@ -25,8 +26,7 @@ def display_student_infos_table(student_infos):
     table_data = [student_list_infos]
 
     # make enrolled lessons on separate lines
-    enrolled_lessons = student_list_infos[-1]
-    student_list_infos[-1] = f",{enrolled_lessons}".replace(",", "\n--> ")
+    student_list_infos[-1] = f",{student_list_infos[-1]}".replace(",", "\n--> ")
 
     table = tabulate(table_data, headers=table_headers, tablefmt="rounded_grid")
     print()

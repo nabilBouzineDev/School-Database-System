@@ -22,10 +22,11 @@ c. Data Selection
         - Grade
         - Enrolled Date
         - Enrolled Lessons (use the Student-Lesson association)
+    2 Make a table contains these records
 
 d. Feedback
 
-    1. Display Student Info to the user
+    1. Display Student Info table to the user
     2. Display Error Message for validation errors or if the student ID doesn't exist.
 
 e. Database Cleanup
