@@ -1,8 +1,8 @@
 """ [app.py]: this file where the user interact with our program """
 
 from src import database
-from utils import util_display as um
-from utils import util_validations as uv
+from src.utils import util_display as um
+from src.utils import util_validations as uv
 
 MENU_PROMPT = """\n -- SCHOOL APP SYSTEM --
 a) Add a new student.

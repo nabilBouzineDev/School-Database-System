@@ -133,9 +133,9 @@ def update_student(connection, student_id, updated_student_records):
         connection.execute(UPDATE_STUDENT_QUERY, (student_id,))
 
 
-def update_lesson(connection, updated_student_records, student_id):
+def update_lesson(connection, updated_lesson_records, student_id):
     with connection:
-        for old_lesson, new_lesson in updated_student_records.items():
+        for old_lesson, new_lesson in updated_lesson_records.items():
             # we don't have to update if the new lesson already exist
             if is_lesson_exist(connection, new_lesson):
                 # delete old lesson
