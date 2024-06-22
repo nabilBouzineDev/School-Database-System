@@ -1,8 +1,8 @@
 import re
 from datetime import datetime
 
-from src import database
-from src.utils import util_display as um
+import database
+import utils.util_display as um
 
 
 def get_valid_input(
