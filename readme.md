@@ -108,6 +108,7 @@ SchoolDbSystem/
 ├── tests/
 │   └── test_database.py
 │
+├── requirements.txt
 ├── readme.md
 └── .gitignore
 ```
@@ -128,6 +129,63 @@ SchoolDbSystem/
 > ![feature_03_04](https://github.com/nabilBouzineDev/School-Database-System/assets/139881384/559ef39f-8309-41f7-8ca5-cb06fd4fb7aa)
 
 ---
+
+# Getting Started
+
+To get started with the School Database System, follow these steps:
+
+## Run Locally
+
+1. Clone the project to your local machine:
+
+```
+ git clone https://github.com/nabilBouzineDev/School-Database-System.git
+```
+
+2. Navigate to the project directory:
+
+```
+ cd School-Database-System
+```
+
+3. Install the required packages:
+
+```
+ pip install -r requirements.txt
+```
+
+4. Navigate to the `src` directory:
+
+```
+ cd src
+```
+
+5. Create a new directory for the database:
+
+```
+ mkdir db
+```
+
+6. Run the `app.py` file to start the application:
+
+```
+ python app.py
+```
+
+## Run Tests
+
+7. Navigate to the project directory:
+
+```
+ cd School-Database-System
+```
+
+8. Run the `test_database.py` unittest:
+
+```
+ python -m unittest tests/test_database.py
+```
+
 
 # Disclaimer
 
